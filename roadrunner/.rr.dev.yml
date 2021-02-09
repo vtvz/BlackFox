@@ -2,7 +2,7 @@ http:
   address: ":8080"
   workers:
     command: "php roadrunner/index.php"
-    relay: "tcp://localhost:7000"
+    relay: "unix:///tmp/rr.socket"
     pool:
       numWorkers: 1
       maxJobs: 1

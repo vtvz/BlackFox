@@ -13,7 +13,7 @@ class Runner implements RunnerInterface
 {
     public function run(RequestHandlerInterface $handler): void
     {
-        $relay  = new Goridge\SocketRelay("localhost", 7000, Goridge\SocketRelay::SOCK_TCP);
+        $relay  = new Goridge\SocketRelay("/tmp/rr.socket", type: Goridge\SocketRelay::SOCK_UNIX);
         $worker = new RoadRunner\Worker($relay);
         $psr7   = new RoadRunner\PSR7Client($worker);
 
