@@ -1,0 +1,15 @@
+FROM php:8.0.2-alpine
+
+WORKDIR /var/www/app
+
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+RUN apk --no-cache add git libcurl curl libzip-dev curl-dev pcre-dev ${PHPIZE_DEPS} \
+  && docker-php-ext-install curl zip sockets \
+  && pecl install -o -f redis \
+  && docker-php-ext-enable redis \
+  && apk del pcre-dev ${PHPIZE_DEPS} curl-dev
+
+COPY .docker/entrypoint.sh /etc/entrypoint.sh
+ENTRYPOINT ["/etc/entrypoint.sh"]
+CMD ["./roadrunner/rr", "serve", "--logFormat", "json", "--workDir", "/var/www/app", "--config", "roadrunner/.rr.dev.yml", "--verbose", "--debug"]

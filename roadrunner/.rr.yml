@@ -1,0 +1,11 @@
+http:
+  address: "0.0.0.0:8080"
+  workers:
+    command: "php roadrunner/index.php"
+    relay: "unix:///tmp/rr.socket"
+    pool:
+      numWorkers: 1
+      maxJobs: 1
+
+static:
+  dir: "public"

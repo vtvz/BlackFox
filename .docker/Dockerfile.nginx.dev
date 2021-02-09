@@ -1,0 +1,23 @@
+FROM php:8.0.2-fpm-alpine
+
+WORKDIR /var/www/app
+
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+RUN apk --no-cache add libcap git libcurl curl libzip-dev curl-dev pcre-dev ${PHPIZE_DEPS} \
+  nginx parallel \
+  && docker-php-ext-install curl zip sockets \
+  && pecl install -o -f redis \
+  && docker-php-ext-enable redis \
+  && apk del pcre-dev ${PHPIZE_DEPS} curl-dev
+
+COPY .docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+RUN sed -i 's|^error_log .*|error_log /dev/stdout;|g' /etc/nginx/nginx.conf \
+  && sed -i 's|^listen = .*|listen = /run/php-fpm.sock|g' /usr/local/etc/php-fpm.d/zz-docker.conf \
+  && echo 'listen.owner = nginx' >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+  && echo 'listen.group = nginx' >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+  && echo 'listen.mode = 0660' >> /usr/local/etc/php-fpm.d/zz-docker.conf
+
+COPY .docker/entrypoint.sh /etc/entrypoint.sh
+ENTRYPOINT ["/etc/entrypoint.sh"]
+CMD ["parallel", "--line-buffer", "--halt", "now,done=1", "--jobs", "2", ":::", "php-fpm", "nginx -g 'pid /tmp/nginx.pid; daemon off;'"]

@@ -1,0 +1,26 @@
+version: '3.7'
+services:
+  php:
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile.dev
+    ports:
+      - 8080:8080
+    restart: "no"
+    volumes:
+      - ./:/var/www/app:delegated
+    environment:
+      XDEBUG_CONFIG: "remote_host=host.docker.internal"
+      PHP_IDE_CONFIG: "serverName=Docker"
+      COMPOSER_HOME: "/var/www/app/var/docker/composer"
+      REDIS_PASSWORD: "password"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+    working_dir: /var/www/app
+    user: "1000"
+
+  redis:
+    image: redis:6.0.9-alpine
+    command: redis-server --requirepass password
+    expose:
+      - 6379
